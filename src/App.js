@@ -1,21 +1,22 @@
 import React, { useState, useEffect } from "react";
 
+import GlobalStyles from "./components/GlobalStyles";
 import Nav from "./components/Nav";
+import Search from "./components/Search";
 
 import "./App.css";
 import axios from "axios";
+import styled from "styled-components";
 import { auth } from "./firebase";
+import firebase from "firebase";
 
 function App() {
   const [allPeople, setAllPeople] = useState("");
-  // const [isLoading, setIsLoading] = useState(false);
 
-  // const [loggedIn, setLoggedIn] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [user, setUser] = useState("");
 
-  //loading all people on page render
   useEffect(() => {
-    // setIsLoading(true);
-
     let people = [];
     axios
       .get("https://swapi.dev/api/people/")
@@ -39,20 +40,49 @@ function App() {
         );
         return setAllPeople(people);
       });
-    // setIsLoading(false);
   }, []);
 
   //auth
-  useEffect(() => {});
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((authUser) => {
+      if (authUser) {
+        setUser(authUser);
+        setLoggedIn(true);
+      } else {
+        setUser("");
+        setLoggedIn(false);
+      }
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, [user]);
 
   return (
-    // !isLoading && (
-    <div className="App">
-      <Nav allPeople={allPeople} />
-    </div>
-    // )
-    // loggedIn ? <div>Logged In !</div> : <div>Not Logged In !</div>
+    <>
+      <GlobalStyles />
+      <div className="App">
+        <Container>
+          <Wrapper>
+            <Nav loggedIn={loggedIn} user={user} />
+            <Search allPeople={allPeople} loggedIn={loggedIn} user={user} />
+          </Wrapper>
+        </Container>
+      </div>
+    </>
   );
 }
 
+const Container = styled.div`
+  width: 100%;
+  background-color: black;
+`;
+
+const Wrapper = styled.div`
+  max-width: 1200px;
+  margin: auto;
+  padding: 16px 32px;
+  background-image: url("/images/background.jpg");
+  min-height: 100vh;
+`;
 export default App;

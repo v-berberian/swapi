@@ -1,96 +1,80 @@
 import React, { useState } from "react";
-import PersonCard from "./PersonCard";
+import styled from "styled-components";
+import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth";
+import firebase from "firebase";
 
-import { search_url } from "../api";
+const Nav = ({ loggedIn, user }) => {
+  const [open, setOpen] = useState(false);
 
-import axios from "axios";
-import uuid from "react-uuid";
-
-const Nav = ({ allPeople }) => {
-  const [input, setInput] = useState("");
-  const [suggestions, setSuggestions] = useState("");
-  const [person, setPerson] = useState("");
-
-  const handleInput = (e) => {
-    // console.log(e);
-    const value = e.target.value;
-    setInput(value);
-
-    if (allPeople && value.length > 1) {
-      const regex = new RegExp(`${value}`, "i");
-
-      setSuggestions(
-        allPeople
-          .map((person) => person.name)
-          .sort()
-          .filter((el) => regex.test(el))
-      );
-    } else if (value.length === 0) {
-      setSuggestions(null);
-      setPerson("");
-    }
+  const uiConfig = {
+    // Popup signin flow rather than redirect flow.
+    signInFlow: "popup",
+    // Redirect to /signedIn after sign in is successful. Alternatively you can provide a callbacks.signInSuccess function.
+    signInSuccessUrl: "/signedIn",
+    // We will display Google and Facebook as auth providers.
+    signInOptions: [firebase.auth.FacebookAuthProvider.PROVIDER_ID],
   };
 
-  const handleName = (e) => {
-    const name = e.target.innerText;
-    setInput(name);
-    setSuggestions("");
-    // const person = {};
-    for (let i = 0; i < allPeople.length; i++) {
-      if (allPeople[i]["name"] === name) {
-        setPerson(allPeople[i]);
-      }
-    }
+  const handleLogin = () => {
+    // Sign in using a popup.
+    var provider = new firebase.auth.FacebookAuthProvider();
+    provider.addScope("user_birthday");
+    // provider.setCustomParameters({ auth_type: "reauthenticate" });
+    firebase
+      .auth()
+      .signInWithPopup(provider)
+      .then(function (result) {
+        // This gives you a Facebook Access Token.
+        var token = result.credential.accessToken;
+        // The signed-in user info.
+        var user = result.user;
+      });
   };
 
-  const handleClear = () => {
-    setInput("");
-    setPerson("");
-    setSuggestions("");
+  const handleLogout = () => {
+    firebase
+      .auth()
+      .signOut()
+      .catch((error) => console.log(error));
   };
-
-  const submitSearch = (e) => {
-    e.preventDefault();
-    axios
-      .get(search_url(input))
-      .then((data) => {
-        function sort(a, b) {
-          if (a.name < b.name) {
-            return -1;
-          }
-          if (a.name > b.name) {
-            return 1;
-          }
-          return 0;
-        }
-        const sortedArray = data.data.results.sort(sort);
-        setPerson(sortedArray[0]);
-      })
-      .catch((error) => alert(error));
-    setSuggestions(null);
-  };
-
-  /////////////////////////////AUTH
-  // const signInWithFacebook = () => {
-  //   const facebookProvider = new firebase.auth.FacebookAuthProvider();
-  // };
 
   return (
-    <div>
-      <form onSubmit={submitSearch}>
-        <input type="text" onChange={handleInput} value={input} />
-      </form>
-      <button onClick={handleClear}>clear</button>
-      {/* AutoComplete */}
-      {suggestions &&
-        suggestions.map((e) => (
-          <p onClick={handleName} key={uuid()}>
-            {e}
-          </p>
-        ))}
-      <PersonCard person={person} suggestions={suggestions} />
-    </div>
+    <NavBar>
+      {loggedIn ? (
+        <>
+          <Login onClick={handleLogout}>Logout</Login>
+          <div onClick={() => setOpen(true)} className="logged-in-btn">
+            {user.displayName}
+          </div>
+        </>
+      ) : (
+        // <Login onClick={() => setOpen(true)}> Login</Login>
+        <Login onClick={handleLogin}>Login with FB</Login>
+      )}
+    </NavBar>
   );
 };
+
+const NavBar = styled.nav`
+  width: 100%;
+  height: 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .logged-in-btn {
+    &:hover {
+      color: none;
+    }
+  }
+`;
+
+const Login = styled.div`
+  text-transform: uppercase;
+  cursor: pointer;
+  &:hover {
+    color: red;
+  }
+`;
 
 export default Nav;
