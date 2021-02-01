@@ -48,6 +48,7 @@ const Search = ({ allPeople, loggedIn, user }) => {
 
   const handleName = (e) => {
     const name = e.target.innerText || "";
+    console.log(name);
     setInput(name);
     setSuggestions("");
     if (allPeople) {

@@ -129,14 +129,13 @@ const PersonCard = ({ person, suggestions, handleClear, loggedIn, user }) => {
               <div>
                 {!uploadedImageURL && liked && (
                   <ChooseImage>
-                    <label htmlFor="choose-img">choose photo</label>
+                    {!image && <label htmlFor="choose-img">choose photo</label>}{" "}
                     <input id="choose-img" type="file" onChange={handleImage} />
                     {image && (
                       <button onClick={handleUpload}>upload</button>
                     )}{" "}
                   </ChooseImage>
                 )}
-                {/* <button onClick={handleUpload}>upload</button> */}
               </div>
               {uploadedImageURL && loggedIn && (
                 <UploadedImage>
@@ -239,9 +238,9 @@ const Button = styled.div`
 `;
 
 const ChooseImage = styled.div`
-  display: flex;
+  /* display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: center; */
   line-height: 0.1rem;
   flex-direction: column;
   color: #6262d8;
