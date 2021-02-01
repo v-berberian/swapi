@@ -28,8 +28,7 @@ const Search = ({ allPeople, loggedIn, user }) => {
   }, [user]);
 
   const handleInput = (e) => {
-    // console.log(e);
-    const value = e.target.value;
+    const value = e.target.value || "";
     setInput(value);
 
     if (allPeople && value?.length > 1) {
@@ -48,7 +47,7 @@ const Search = ({ allPeople, loggedIn, user }) => {
   };
 
   const handleName = (e) => {
-    const name = e.target.innerText;
+    const name = e.target.innerText || "";
     setInput(name);
     setSuggestions("");
     if (allPeople) {
